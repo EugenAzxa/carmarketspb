@@ -84,6 +84,11 @@
   const watching = c => 2 + (c.id % 7);
 
   const seller = c => SELLERS[c.seller] || {};
+  const themeStyle = s => `--seller-a:${s.colors.a};--seller-b:${s.colors.b};--seller-gold:${s.colors.gold}`;
+  function applyTheme(s) {
+    const r = document.documentElement.style;
+    r.setProperty('--seller-a', s.colors.a); r.setProperty('--seller-b', s.colors.b); r.setProperty('--seller-gold', s.colors.gold);
+  }
 
   /* ---------------- derived car facts ---------------- */
   const gb = c => c.gearbox === 'DSG' ? 'Робот DSG' : c.gearbox;
@@ -116,7 +121,7 @@
       </a>
       <nav class="nav" id="nav">
         ${link('index.html#catalog', 'Каталог', 'catalog')}
-        ${link('seller.html?id=lex-auto', 'Lex Auto', 'seller')}
+        ${link('index.html#sellers', 'Продавцы', 'seller')}
         ${link('index.html#how', 'Как купить', 'how')}
         ${link('bloggers.html', 'Для блогеров', 'bloggers')}
       </nav>
@@ -141,7 +146,7 @@
           <li><a href="index.html?fav=1#catalog">Избранное</a></li>
         </ul></div>
         <div><h4>Продавцам</h4><ul>
-          <li><a href="seller.html?id=lex-auto">Витрина Lex Auto</a></li>
+          ${Object.values(SELLERS).map(x => `<li><a href="seller.html?id=${x.id}">${esc(x.name)}</a></li>`).join('')}
           <li><a href="bloggers.html">Для блогеров</a></li>
           <li><a href="bloggers.html#join">Подключить канал</a></li>
         </ul></div>
@@ -168,7 +173,7 @@
       : c.status === 'reserved' ? '<div class="status reserved"><span>Задаток внесён</span></div>' : '';
     const ref = c.avito || c.market;
     return `
-    <article class="card reveal" style="--seller-a:${s.colors?.a};--seller-b:${s.colors?.b};--seller-gold:${s.colors?.gold}">
+    <article class="card reveal t-${s.theme}" style="${themeStyle(s)}">
       <div class="card-media">
         <img src="${c.card}" alt="${esc(fullName(c))} ${c.year}" loading="lazy" width="640" height="480">
         ${c.gap ? `<span class="gap-badge">${ic('down', 'sm')}-${kRub(c.gap)} к рынку</span>` : ''}
@@ -371,21 +376,25 @@
       <div class="stat"><b>${kRub(sum)}</b><span>₽ ниже рынка суммарно</span></div>
       <div class="stat"><b>${Math.round(Object.values(SELLERS).reduce((a, x) => a + x.subscribers, 0) / 1000)}K</b><span>аудитория продавцов</span></div>`;
 
-    // sellers rail
-    $('#sellers').innerHTML = `
-      <a class="seller-tile brand reveal" href="seller.html?id=${s.id}" style="--seller-a:${s.colors.a};--seller-b:${s.colors.b};--seller-gold:${s.colors.gold}">
-        <img class="ava" src="${s.avatar}" alt="" width="64" height="64">
-        <h3>${esc(s.name)}</h3>
-        <p>${esc(s.tagline)}</p>
-        <div class="meta"><span>${Math.round(s.subscribers / 1000)}K подписчиков</span><span>${CARS.filter(c => c.seller === s.id).length} авто</span></div>
-      </a>
-      ${[1, 2, 3].map(() => `
+    // sellers rail: every seller in their own brand, then open slots
+    const tiles = Object.values(SELLERS).map(x => {
+      const n = CARS.filter(c => c.seller === x.id && c.status !== 'sold').length;
+      return `
+      <a class="seller-tile brand t-${x.theme} reveal" href="seller.html?id=${x.id}" style="${themeStyle(x)}">
+        ${x.logo ? `<img class="tile-logo" src="${x.logo}" alt="" loading="lazy">` : `<img class="ava" src="${x.avatar}" alt="" width="64" height="64">`}
+        <h3>${esc(x.name)}</h3>
+        <p>${esc(x.tagline)}</p>
+        <div class="meta">${x.subscribers ? `<span>${Math.round(x.subscribers / 1000)}K подписчиков</span>` : ''}<span>${n ? n + ' авто' : 'Скоро на маркете'}</span></div>
+      </a>`;
+    });
+    const free = Math.max(1, 4 - tiles.length);
+    $('#sellers').innerHTML = tiles.join('') + Array.from({ length: free }, () => `
       <a class="seller-tile soon reveal" href="bloggers.html#join">
         <span class="ava">${ic('plus')}</span>
         <h3>Твой канал</h3>
         <p>Место для следующего медийного перекупа Питера</p>
         <div class="meta"><span>Подключить ${ic('arrow', 'sm')}</span></div>
-      </a>`).join('')}`;
+      </a>`).join('');
 
     // search
     $('#heroSearch').addEventListener('submit', e => {
@@ -406,7 +415,7 @@
     gap300: { gapMin: 300000 }, cheap: { priceMax: 700000 }, awd: { awd: true },
     owner: { owners12: true }, avito: { notAvito: true }, native: { native: true }
   };
-  const DEF = { q: '', make: '', priceMin: '', priceMax: '', yearMin: '', gear: '', awd: false, owners12: false, notAvito: false, native: false, noAcc: false, gapMin: 0, sold: false, fav: false, sort: 'gap' };
+  const DEF = { q: '', seller: '', make: '', priceMin: '', priceMax: '', yearMin: '', gear: '', awd: false, owners12: false, notAvito: false, native: false, noAcc: false, gapMin: 0, sold: false, fav: false, sort: 'gap' };
   let state = { ...DEF };
 
   function catalog() {
@@ -414,12 +423,17 @@
     if (params.get('fav')) state.fav = true;
     if (params.get('q')) state.q = params.get('q');
     if (params.get('make')) state.make = params.get('make');
+    if (params.get('seller')) state.seller = params.get('seller');
     const makes = [...new Set(CARS.map(c => c.make))].sort();
     const count = f => CARS.filter(c => c.status !== 'sold' && f(c)).length;
     $('#filters').innerHTML = `
       <div class="f-group">
         <h3>Поиск</h3>
         <input class="field" id="fq" placeholder="Марка, модель, год" value="${esc(state.q)}">
+      </div>
+      <div class="f-group">
+        <h3>Продавец</h3>
+        <div class="seg" id="fseller"><button type="button" data-v="">Все</button>${Object.values(SELLERS).map(x => `<button type="button" data-v="${x.id}">${esc(x.name)}${count(c => c.seller === x.id) ? '' : ' · скоро'}</button>`).join('')}</div>
       </div>
       <div class="f-group">
         <h3>Марка</h3>
@@ -467,6 +481,7 @@
     [['#fawd', 'awd'], ['#fown', 'owners12'], ['#fnat', 'native'], ['#favito', 'notAvito'], ['#facc', 'noAcc'], ['#ffav', 'fav'], ['#fsold', 'sold']]
       .forEach(([id, k]) => on(id, 'change', () => state[k] = $(id).checked));
     $('#fgap').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; state.gapMin = +b.dataset.v; syncFilters(); render(); });
+    $('#fseller').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; state.seller = b.dataset.v; syncFilters(); render(); });
     $('#fgear').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; state.gear = b.dataset.v; syncFilters(); render(); });
     $('#freset').addEventListener('click', () => { state = { ...DEF, sort: state.sort }; syncFilters(); render(); });
     $('#sort').addEventListener('change', () => { state.sort = $('#sort').value; render(); });
@@ -489,6 +504,7 @@
     $('#favito').checked = state.notAvito; $('#facc').checked = state.noAcc; $('#ffav').checked = state.fav; $('#fsold').checked = state.sold;
     $$('#fgap button').forEach(b => b.classList.toggle('on', +b.dataset.v === state.gapMin));
     $$('#fgear button').forEach(b => b.classList.toggle('on', b.dataset.v === state.gear));
+    $$('#fseller button').forEach(b => b.classList.toggle('on', b.dataset.v === state.seller));
     $('#sort').value = state.sort;
   }
 
@@ -500,6 +516,7 @@
         const hay = `${c.make} ${c.model} ${c.year} ${c.gearbox} ${c.fuel} ${c.engine_line} ${seller(c).name}`.toLowerCase();
         if (!q.split(/\s+/).every(w => hay.includes(w))) return false;
       }
+      if (state.seller && c.seller !== state.seller) return false;
       if (state.make && c.make !== state.make) return false;
       if (state.priceMin && c.price < state.priceMin) return false;
       if (state.priceMax && c.price > state.priceMax) return false;
@@ -530,7 +547,7 @@
     $('#found').innerHTML = `${list.length} <span>${plural(list.length, 'машина', 'машины', 'машин')}</span>`;
     $('#fshow') && ($('#fshow').textContent = `Показать ${list.length}`);
     $('#grid').innerHTML = list.length ? list.map(card).join('') :
-      `<div class="empty"><b>${state.fav ? 'В избранном пусто' : 'Ничего не нашлось'}</b>${state.fav ? 'Жмите на сердце на карточке, чтобы сохранить машину.' : 'Попробуйте убрать пару фильтров.'}</div>`;
+      `<div class="empty"><b>${state.fav ? 'В избранном пусто' : state.seller && SELLERS[state.seller]?.onboarding ? SELLERS[state.seller].name + ' скоро на маркете' : 'Ничего не нашлось'}</b>${state.fav ? 'Жмите на сердце на карточке, чтобы сохранить машину.' : state.seller && SELLERS[state.seller]?.onboarding ? 'Канал подключается, машины появятся здесь автоматически.' : 'Попробуйте убрать пару фильтров.'}</div>`;
     reveal($('#grid'));
     const n = Object.keys(DEF).filter(k => k !== 'sort' && state[k] !== DEF[k]).length;
     $('#filterBtn').innerHTML = `${ic('sliders', 'sm')}Фильтры${n ? ' · ' + n : ''}`;
@@ -584,9 +601,7 @@
     const id = new URLSearchParams(location.search).get('id');
     const c = CARS.find(x => x.slug === id) || CARS[0];
     const s = seller(c);
-    document.documentElement.style.setProperty('--seller-a', s.colors.a);
-    document.documentElement.style.setProperty('--seller-b', s.colors.b);
-    document.documentElement.style.setProperty('--seller-gold', s.colors.gold);
+    applyTheme(s);
     document.title = `${fullName(c)} ${c.year} за ${rub(c.price)} - ${s.name} | CarMarket SPB`;
     const meta = document.querySelector('meta[name=description]');
     meta && meta.setAttribute('content', `${fullName(c)} ${c.year}, ${specLine(c).slice(1).join(', ')}. Цена ${rub(c.price)}, на ${kRub(c.gap)} ниже рынка. Продаёт ${s.name}.`);
@@ -842,16 +857,26 @@
     mountChrome('seller');
     const id = new URLSearchParams(location.search).get('id') || 'lex-auto';
     const s = SELLERS[id] || SELLERS['lex-auto'];
-    const root = document.documentElement.style;
-    root.setProperty('--seller-a', s.colors.a); root.setProperty('--seller-b', s.colors.b); root.setProperty('--seller-gold', s.colors.gold);
+    applyTheme(s);
     document.title = `${s.name} - витрина на CarMarket SPB`;
     const cars = CARS.filter(c => c.seller === s.id);
     const active = cars.filter(c => c.status !== 'sold');
-    const avg = active.reduce((a, c) => a + (c.gap || 0), 0) / active.length;
-    const maxGap = active.reduce((m, c) => (c.gap || 0) > (m.gap || 0) ? c : m, active[0]);
+    const avg = active.length ? active.reduce((a, c) => a + (c.gap || 0), 0) / active.length : 0;
+    const maxGap = active.reduce((m, c) => (c.gap || 0) > ((m && m.gap) || 0) ? c : m, null);
+    const L = s.links;
+    const stats = active.length ? [
+      s.subscribers ? [`${Math.round(s.subscribers / 1000)}K`, 'подписчиков в Telegram'] : null,
+      [active.length, 'авто в продаже'],
+      [`<span style="color:var(--accent)">-${kRub(Math.round(avg / 10000) * 10000)}</span>`, 'средний зазор к рынку'],
+      s.media ? [s.media.photos, 'фото машин в канале'] : null
+    ].filter(Boolean) : [
+      ['Скоро', 'машины из канала на маркете'],
+      ['Задаток', 'бронь онлайн с первого дня'],
+      ['СПб', 'осмотр и сделка в Петербурге']
+    ];
 
     $('#seller').innerHTML = `
-      <section class="s-hero">
+      <section class="s-hero t-${s.theme}">
         <div class="word" aria-hidden="true">${esc(s.name.toUpperCase())}</div>
         <div class="wrap s-hero-in">
           <div>
@@ -861,28 +886,24 @@
               <span>${ic('badge', 'sm verified')} ${esc(s.person)}</span>
               <span>${ic('pin', 'sm')} ${esc(s.city)}</span>
               ${s.rkn ? `<a href="${s.rkn}" target="_blank" rel="noopener">${ic('shield', 'sm')} Канал в реестре РКН</a>` : ''}
+              ${s.onboarding ? `<span class="onb">${ic('clock', 'sm')} Подключается к маркету</span>` : ''}
             </div>
             <p class="tagline">${esc(s.tagline)}</p>
             <div class="s-links">
-              <a class="btn btn-gold" href="${s.links.channel}" target="_blank" rel="noopener">${ic('send', 'sm')}Канал в Telegram</a>
-              <a class="btn" href="${s.links.contact}" target="_blank" rel="noopener">${ic('msg', 'sm')}Написать</a>
-              <a class="btn" href="tel:${s.phone}">${ic('phone', 'sm')}${esc(s.phoneLabel)}</a>
-              <a class="btn" href="${s.links.instagram}" target="_blank" rel="noopener">${ic('insta', 'sm')}Instagram</a>
-              ${s.links.max ? `<a class="btn" href="${s.links.max}" target="_blank" rel="noopener"><b class="max">MAX</b>MAX</a>` : ''}
+              ${L.channel ? `<a class="btn btn-gold" href="${L.channel}" target="_blank" rel="noopener">${ic('send', 'sm')}Канал в Telegram</a>` : ''}
+              ${L.instagram ? `<a class="btn ${L.channel ? '' : 'btn-gold'}" href="${L.instagram}" target="_blank" rel="noopener">${ic('insta', 'sm')}Instagram</a>` : ''}
+              ${L.contact ? `<a class="btn" href="${L.contact}" target="_blank" rel="noopener">${ic('msg', 'sm')}Написать</a>` : ''}
+              ${s.phone ? `<a class="btn" href="tel:${s.phone}">${ic('phone', 'sm')}${esc(s.phoneLabel)}</a>` : ''}
+              ${L.max ? `<a class="btn" href="${L.max}" target="_blank" rel="noopener"><b class="max">MAX</b>MAX</a>` : ''}
             </div>
           </div>
-          <div class="s-person">
-            <a class="bubble" href="car.html?id=${maxGap.slug}"><small style="display:block;color:#666;font-weight:600">Самый большой зазор сейчас</small>-${kRub(maxGap.gap)} на ${esc(fullName(maxGap))}</a>
-            <img src="${s.cutout}" alt="${esc(s.person)}">
+          <div class="s-person ${s.cutout ? '' : 'logo'}">
+            ${maxGap ? `<a class="bubble" href="car.html?id=${maxGap.slug}"><small>Самый большой зазор сейчас</small>-${kRub(maxGap.gap)} на ${esc(fullName(maxGap))}</a>` : ''}
+            <img src="${s.cutout || s.logo}" alt="${esc(s.cutout ? s.person : 'Логотип ' + s.name)}">
           </div>
         </div>
       </section>
-      <div class="s-stats">
-        <div><b>${Math.round(s.subscribers / 1000)}K</b><span>подписчиков в Telegram</span></div>
-        <div><b>${active.length}</b><span>авто в продаже</span></div>
-        <div><b style="color:var(--accent)">-${kRub(Math.round(avg / 10000) * 10000)}</b><span>средний зазор к рынку</span></div>
-        <div><b>${s.media.photos}</b><span>фото машин в канале</span></div>
-      </div>
+      <div class="s-stats" style="grid-template-columns:repeat(${stats.length},1fr)">${stats.map(([b, t]) => `<div><b>${b}</b><span>${t}</span></div>`).join('')}</div>
       <div class="wrap">
         ${s.upcoming && s.upcoming.length ? `
         <section class="sec" style="padding-bottom:0">
@@ -904,24 +925,42 @@
           </div>`).join('')}
         </section>` : ''}
         <section class="sec" style="padding-bottom:0">
+          ${L.channel && cars.length ? `
           <div class="sec-hd"><div><h2>Лента канала</h2><p>Свежие посты из Telegram ${esc(s.name)}: обзоры, анонсы и машины, которые только вышли.</p></div>
-            <a class="btn btn-ghost btn-sm" href="${s.links.channel}" target="_blank" rel="noopener">${ic('send', 'sm')}Открыть канал</a></div>
-          <div class="tg-rail" id="sFeed"></div>
-          <a class="ig-card reveal" href="${s.links.instagram}" target="_blank" rel="noopener">
+            <a class="btn btn-ghost btn-sm" href="${L.channel}" target="_blank" rel="noopener">${ic('send', 'sm')}Открыть канал</a></div>
+          <div class="tg-rail" id="sFeed"></div>` : ''}
+          ${L.instagram ? `
+          <a class="ig-card reveal" href="${L.instagram}" target="_blank" rel="noopener">
             <span class="ig-ico">${ic('insta', 'lg')}</span>
-            <div><b>@${esc(s.links.instagram.split('/').filter(Boolean).pop())}</b><small>Reels с осмотров, выдачи машин и закулисье в Instagram</small></div>
+            <div><b>@${esc(L.instagram.split('/').filter(Boolean).pop())}</b><small>Reels с осмотров, выдачи машин и закулисье в Instagram</small></div>
             <span class="btn btn-sm">Смотреть ${ic('arrow', 'sm')}</span>
-          </a>
+          </a>` : ''}
         </section>
         <section class="sec">
+          ${cars.length ? `
           <div class="sec-hd"><div><h2>Все машины ${esc(s.name)}</h2><p>${cars.length} ${plural(cars.length, 'машина', 'машины', 'машин')} из канала. Отсортировано по зазору к рынку.</p></div></div>
-          <div class="grid" id="sGrid"></div>
+          <div class="grid" id="sGrid"></div>` : `
+          <div class="onboard t-${s.theme} reveal">
+            <img src="${s.logo || s.avatar}" alt="" loading="lazy">
+            <div>
+              <h2>Машины ${esc(s.name)} скоро здесь</h2>
+              <p>Подключаем канал: как только машина выходит в Telegram, она появится на маркете с фото, ценой и зазором до рынка. Можно забронировать задатком раньше всех.</p>
+              <div style="display:flex;gap:10px;flex-wrap:wrap">
+                <button class="btn btn-accent" data-notify>${ic('zap', 'sm')}Сообщить о первой машине</button>
+                <a class="btn btn-ghost" href="index.html#catalog">Смотреть другие тачки</a>
+              </div>
+            </div>
+          </div>`}
         </section>
       </div>`;
-    $('#sGrid').innerHTML = [...cars].sort((a, b) => (a.status === 'sold') - (b.status === 'sold') || (b.gap || 0) - (a.gap || 0)).map(card).join('');
-    bindFavs($('#sGrid'));
-    const feed = [...cars].sort((a, b) => b.id - a.id).slice(0, 2).flatMap(c => c.tg_posts.slice().reverse()).slice(0, 8);
-    tgEmbeds($('#sFeed'), feed, channelOf(s));
+    if (cars.length) {
+      $('#sGrid').innerHTML = [...cars].sort((a, b) => (a.status === 'sold') - (b.status === 'sold') || (b.gap || 0) - (a.gap || 0)).map(card).join('');
+      bindFavs($('#sGrid'));
+    }
+    if ($('#sFeed')) {
+      const feed = [...cars].sort((a, b) => b.id - a.id).slice(0, 2).flatMap(c => c.tg_posts.slice().reverse()).slice(0, 8);
+      tgEmbeds($('#sFeed'), feed, channelOf(s));
+    }
     $$('[data-notify]').forEach(b => b.addEventListener('click', () => { b.innerHTML = `${ic('check', 'sm')}Напомним`; b.disabled = true; toast('Пришлём, как только машина выйдет'); }));
     reveal();
   }

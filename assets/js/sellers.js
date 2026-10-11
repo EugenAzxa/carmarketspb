@@ -12,7 +12,8 @@ window.SELLERS = {
     media: { photos: '64.7K', videos: '5.47K' },
     avatar: 'assets/img/sellers/lex-auto/avatar.jpg',
     cutout: 'assets/img/sellers/lex-auto/lexa-cutout.png',
-    cover: 'assets/img/sellers/lex-auto/lexa-rr.jpg',
+    cover: 'assets/img/sellers/lex-auto/lexa-rr2.jpg',
+    theme: 'neon',
     colors: { a: '#ff2bd6', b: '#7a2cff', gold: '#f2b84b' },
     verified: true,
     rkn: 'https://clck.ru/3Qu5pP',
@@ -37,5 +38,29 @@ window.SELLERS = {
         source: 'https://t.me/lexautospb13/163130'
       }
     ]
+  },
+  'perekupchino': {
+    id: 'perekupchino',
+    name: 'Перекупчино',
+    plate: 'ПЕРЕКУПЧИНО',
+    person: 'Перекупчино',
+    title: 'Перекупчино',
+    tagline: 'Медийный перекуп из Петербурга. Машины из канала скоро появятся на маркете.',
+    city: 'Санкт-Петербург',
+    subscribers: 0,
+    avatar: 'assets/img/sellers/perekupchino/avatar.jpg',
+    logo: 'assets/img/sellers/perekupchino/logo-white.png',
+    cutout: null,
+    theme: 'grunge',
+    colors: { a: '#f3f1ea', b: '#0e0e0e', gold: '#ff3b2f' },
+    verified: true,
+    onboarding: true,
+    links: {
+      channel: 'https://t.me/perekupchino_avto',
+      contact: 'https://t.me/sladerev',
+      instagram: 'https://www.instagram.com/perekupchino/'
+    },
+    contactHandle: 'sladerev',
+    upcoming: []
   }
 };
