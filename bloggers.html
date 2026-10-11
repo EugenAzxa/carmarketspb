@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Для блогеров - CarMarket SPB</title>
+<meta name="description" content="Все машины из Telegram-каналов медийных перекупов Петербурга в одной ленте: реальная цена, зазор до рынка, состояние кузова, задаток онлайн.">
+<meta name="theme-color" content="#09090b">
+<meta property="og:title" content="CarMarket SPB - тачки ниже рынка от медийных перекупов Питера">
+<meta property="og:description" content="Все машины из Telegram-каналов медийных перекупов Петербурга в одной ленте: реальная цена, зазор до рынка, состояние кузова, задаток онлайн.">
+<meta property="og:image" content="assets/img/og.jpg">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@500;700;800;900&display=swap&subset=cyrillic" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="bloggers">
+
+<main>
+  <section class="b-hero wrap">
+    <span class="eyebrow"><span class="dot"></span>Для медийных перекупов</span>
+    <h1>Твой канал уже витрина. <em>Сделаем из него маркет.</em></h1>
+    <p>Подписчики листают ленту и теряют машины между розыгрышами и сторис. На CarMarket каждая тачка - отдельное объявление с поиском, фильтрами и задатком. С твоим логотипом.</p>
+    <a class="btn btn-accent" href="#join">Подключить канал</a>
+    <a class="btn btn-ghost" href="seller.html?id=lex-auto" style="margin-left:8px">Пример: витрина Lex Auto</a>
+  </section>
+
+  <section class="sec" style="padding-top:20px">
+    <div class="wrap">
+      <div class="sec-hd"><div><h2>Было в канале - стало на маркете</h2><p>Настоящий пост Lex Auto и карточка, которую мы собрали из него автоматически.</p></div></div>
+      <div class="flow">
+        <div class="tg-post" id="tgPost"></div>
+        <div class="arrow"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        <div id="mkCard"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-hd"><div><h2>Что получает продавец</h2></div></div>
+      <div class="features"><div class="feature reveal"><div class="icon-wrap"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></div><h3>Импорт из Telegram</h3><p>Публикуешь машину в канале как обычно. Мы забираем пост, фото, цену, пробег и оценку Авито и собираем аккуратное объявление.</p></div><div class="feature reveal"><div class="icon-wrap"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg></div><h3>Витрина в твоём стиле</h3><p>Логотип, фирменные цвета, рамка номера на каждой карточке, твоё фото на обложке. Покупатель сразу видит, чья это тачка.</p></div><div class="feature reveal"><div class="icon-wrap"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div><h3>Задаток онлайн</h3><p>Покупатель бронирует машину до приезда. Меньше "я подумаю", больше сделок, бронь видна всем остальным.</p></div><div class="feature reveal"><div class="icon-wrap"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m11 17 2 2a1 1 0 1 0 3-3"/><path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4"/></svg></div><h3>Торг без спама в личке</h3><p>Предложения цены приходят одной заявкой с телефоном. Ты сам решаешь, отвечать или нет.</p></div><div class="feature reveal"><div class="icon-wrap"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18M18 17V9M13 17V5M8 17v-3"/></svg></div><h3>Счётчик спроса</h3><p>Видно, сколько людей хотят машину и сколько смотрят прямо сейчас. Ажиотаж работает на тебя.</p></div><div class="feature reveal"><div class="icon-wrap"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg></div><h3>Новые покупатели</h3><p>Человек ищет Camry, а находит твою. Общий поиск по всем блогерам приводит тех, кто на тебя ещё не подписан.</p></div></div>
+    </div>
+  </section>
+
+  <section class="sec" id="join" style="padding-top:0">
+    <div class="wrap">
+      <div class="panel" style="padding:32px;max-width:860px;margin:0 auto">
+        <h2 style="font-size:clamp(26px,3.4vw,38px);margin-bottom:10px">Заявка на подключение</h2>
+        <p style="color:var(--muted);margin:0 0 24px">Соберём демо-витрину на твоих же машинах из канала и покажем до запуска.</p>
+        <form class="form-grid" id="joinForm">
+          <div><label for="jName">Имя</label><input class="field" id="jName" required autocomplete="name"></div>
+          <div><label for="jPhone">Телефон</label><input class="field" id="jPhone" required type="tel" inputmode="tel" placeholder="+7 900 000-00-00"></div>
+          <div><label for="jTg">Telegram-канал</label><input class="field" id="jTg" required placeholder="@yourchannel"></div>
+          <div><label for="jIg">Instagram</label><input class="field" id="jIg" placeholder="@yourprofile"></div>
+          <div class="full"><label for="jMsg">Сколько машин в месяц продаёте</label><input class="field" id="jMsg" placeholder="Например, 20-30"></div>
+          <div class="full"><button class="btn btn-accent btn-block">Отправить заявку</button></div>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+<script>window.CLS_POST = "⚡️Зазор 550к+ от первых предложений на рынке Питера и Москвы!\n\nMercedes CLS универсал 2013\n3.5 бензин 306лс АВТОМАТ\n3 Владельца✅\n2 ключа🔑🔑\nРодной пробег 155.000⚡️\nПробег подтвержден базой✅\nАвтотека ЗЕЛЕНЬ🌿\nБЕЗ ДТП/ БЕЗ РАСЧЕТОВ‼️\nПочти весь в родной краске\nБуквально 4 окраса косметикой\nКузов ПРЕКРАСНЫЙ😍\nБЕЗ ЖУКОВ И ГНИЛИ!\nПроемы и низа дверей - ИДЕАЛ\nМотор - часики🕐\nИдеально работает, не цокает\nВ красивом синем цвете💙\nКрасивые диски Vossen🛞\nРезина Continental, Перфорированные тормоза🔥\nЖирная комплектация🥵\nЗадняя пневмоподвеска😤\nДерево, кожа, дерево, люк\nПамять, регулировки, автосвет\nКожа мультируль с лепестками\nКруиз, навигация, стекла, зеркала, климат, подогревы, датчик дождя и тд.\n\n📈Старт рынка 2.300к\n🌿Авито оценка 2.280к\n🎁Наша цена всего 1.750к\n☎️ 89991679220";</script>
+<script src="assets/js/cars.js"></script>
+<script src="assets/js/sellers.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>

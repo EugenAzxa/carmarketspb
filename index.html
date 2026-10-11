@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CarMarket SPB - тачки ниже рынка от медийных перекупов Питера</title>
+<meta name="description" content="Все машины из Telegram-каналов медийных перекупов Петербурга в одной ленте: реальная цена, зазор до рынка, состояние кузова, задаток онлайн.">
+<meta name="theme-color" content="#09090b">
+<meta property="og:title" content="CarMarket SPB - тачки ниже рынка от медийных перекупов Питера">
+<meta property="og:description" content="Все машины из Telegram-каналов медийных перекупов Петербурга в одной ленте: реальная цена, зазор до рынка, состояние кузова, задаток онлайн.">
+<meta property="og:image" content="assets/img/og.jpg">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@500;700;800;900&display=swap&subset=cyrillic" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="home">
+
+<div class="ticker" id="ticker" aria-hidden="true"></div>
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-grid">
+        <div>
+          <span class="eyebrow"><span class="dot"></span>Маркет медийных перекупов Питера</span>
+          <h1>Тачки <em>ниже рынка</em>. Без поиска по сотне каналов.</h1>
+          <p class="hero-lead">Машины от блогеров-перекупов в одной ленте: реальная цена, зазор до Авито, окрасы по кузову, сколько людей уже хотят её купить. Понравилась - бронируй задатком в один клик.</p>
+          <form class="search" id="heroSearch" role="search">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input id="q" type="search" placeholder="Camry, X5, до 1 млн, полный привод..." aria-label="Поиск машины">
+            <button class="btn btn-accent">Найти</button>
+          </form>
+          <div class="quick">
+            <button class="chip" data-quick="gap300">Зазор 300к+</button>
+            <button class="chip" data-quick="cheap">До 700 000 ₽</button>
+            <button class="chip" data-quick="awd">Полный привод</button>
+            <button class="chip" data-quick="owner">1-2 владельца</button>
+            <button class="chip" data-quick="avito">Не было на Авито</button>
+          </div>
+        </div>
+        <div id="featured"></div>
+      </div>
+      <div class="stats" id="stats"></div>
+    </div>
+  </section>
+
+  <section class="sec" id="catalog" style="padding-top:30px">
+    <div class="wrap">
+      <div class="sec-hd"><div><h2>Свежие тачки</h2><p>Обновляется из каналов продавцов. Сначала - самый жирный зазор к рынку.</p></div></div>
+      <div class="catalog">
+        <aside class="filters" id="filters" aria-label="Фильтры"></aside>
+        <div>
+          <div class="toolbar">
+            <button class="btn btn-ghost btn-sm filter-btn" id="filterBtn"></button>
+            <div class="found" id="found"></div>
+            <select class="field sort" id="sort" aria-label="Сортировка">
+              <option value="gap">Самый большой зазор</option>
+              <option value="hot">Больше всего хотят</option>
+              <option value="fresh">Свежие</option>
+              <option value="cheap">Дешевле</option>
+              <option value="expensive">Дороже</option>
+              <option value="year">Новее</option>
+            </select>
+          </div>
+          <div class="grid" id="grid"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="how">
+    <div class="wrap">
+      <div class="sec-hd"><div><h2>Как купить без суеты</h2><p>Хорошие машины у перекупов уходят за часы. Задаток онлайн снимает машину с продажи, пока вы едете смотреть.</p></div></div>
+      <div class="steps">
+        <div class="step reveal"><div class="icon-wrap"><svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></div><h3>Выбираете</h3><p>Видите реальную цену, оценку Авито и зазор. Кузов по схеме, история по пунктам, видеообзор из канала.</p></div>
+        <div class="step reveal"><div class="icon-wrap"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div><h3>Бронируете</h3><p>Задаток от 5 000 ₽. Машина в брони до 72 часов, другим покупателям она показывается как занятая.</p></div>
+        <div class="step reveal"><div class="icon-wrap"><svg class="icon" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></div><h3>Смотрите вживую</h3><p>Толщиномер, диагностика, тест-драйв. Не совпало с описанием - задаток возвращается.</p></div>
+        <div class="step reveal"><div class="icon-wrap"><svg class="icon" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div><h3>Забираете</h3><p>Задаток идёт в счёт цены. Договор, ПТС, ключи - и вы на машине ниже рынка.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" style="padding-top:0">
+    <div class="wrap">
+      <div class="sec-hd"><div><h2>Продавцы</h2><p>Только медийные перекупы: у каждого своя витрина, логотип и аудитория, которая следит за машинами.</p></div><a class="btn btn-ghost btn-sm" href="bloggers.html">Стать продавцом</a></div>
+      <div class="sellers" id="sellers"></div>
+    </div>
+  </section>
+
+  <section class="sec" style="padding-top:0">
+    <div class="wrap">
+      <div class="cta-band reveal">
+        <div>
+          <h2>Ведёшь канал про тачки?</h2>
+          <p>Твои посты уже готовые объявления. Подключим канал - машины сами появятся на маркете с твоим логотипом.</p>
+          <a class="btn" href="bloggers.html" style="margin-top:24px">Подробнее для блогеров</a>
+        </div>
+        <ul>
+          <li><svg class="icon sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Импорт машин из Telegram без ручной работы</li>
+          <li><svg class="icon sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Своя витрина в фирменных цветах</li>
+          <li><svg class="icon sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Задатки и торг онлайн, заявки в Telegram</li>
+          <li><svg class="icon sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Новые покупатели из общего поиска</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>
+<script src="assets/js/cars.js"></script>
+<script src="assets/js/sellers.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
