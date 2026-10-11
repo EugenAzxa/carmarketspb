@@ -615,7 +615,8 @@ textarea.field { height: 110px; padding: 12px 14px; resize: vertical; }
 }
 
 /* ---------- seller socials + Telegram embeds ---------- */
-.socials { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.socials { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 8px; }
+.g-thumbs[hidden] { display: none; }
 .socials a { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 6px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); font-size: 12px; font-weight: 700; color: var(--muted); transition: .2s; }
 .socials a:hover { color: var(--text); border-color: var(--seller-a); }
 .max { font-family: var(--display); font-size: 10px; font-weight: 800; letter-spacing: .02em; padding: 3px 5px; border-radius: 6px; background: currentColor; color: inherit; line-height: 1; }
@@ -654,8 +655,8 @@ textarea.field { height: 110px; padding: 12px 14px; resize: vertical; }
 .s-hero.t-grunge .s-links .btn-gold { background: #f3f1ea; color: #0e0e0e; }
 .s-hero.t-grunge .s-links .btn-gold:hover { background: var(--seller-gold); color: #fff; }
 .s-hero.t-grunge .handle .onb { color: var(--seller-gold); }
-.card.t-grunge .plate { background: #f3f1ea; color: #0e0e0e; border: 0; border-radius: 2px; font-style: normal; letter-spacing: .08em; }
-.card.t-grunge .plate img { border-radius: 2px; }
+.plate.t-grunge { background: #f3f1ea; color: #0e0e0e; border: 0; border-radius: 2px; font-style: normal; letter-spacing: .08em; }
+.plate.t-grunge img { border-radius: 2px; }
 .g-main .plate.t-grunge { background: #f3f1ea; color: #0e0e0e; }
 .onboard { display: grid; grid-template-columns: 220px 1fr; gap: 36px; align-items: center; padding: 40px; border-radius: var(--radius); border: 1px solid var(--line); }
 .onboard.t-grunge { border: 2px dashed rgba(243, 241, 234, .35); border-radius: 4px; }
@@ -670,3 +671,10 @@ textarea.field { height: 110px; padding: 12px 14px; resize: vertical; }
   .s-person.logo img { max-width: 240px; }
   .s-hero.t-grunge .ava { display: none; }
 }
+
+.btn-gold-s { background: var(--seller-a); color: var(--seller-b); }
+.btn-gold-s:hover { filter: brightness(1.08); }
+
+.seller-mini.t-grunge { border: 2px solid #f3f1ea; border-radius: 4px; }
+.seller-mini.t-grunge img { border-radius: 4px; border-color: #f3f1ea; }
+.seller-mini.t-grunge .btn { background: #f3f1ea; color: #0e0e0e; border-radius: 2px; }

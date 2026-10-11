@@ -13,12 +13,83 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@500;700;800;900&display=swap&subset=cyrillic" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/style.css?v=4">
+<style id="boot-css">
+html.booting{overflow:hidden}
+#boot{position:fixed;inset:0;z-index:999;background:#09090b;color:#f5f5f6;display:grid;place-items:center;font-family:Unbounded,Manrope,system-ui,sans-serif;transition:transform .7s cubic-bezier(.7,0,.2,1);will-change:transform}
+#boot.out{transform:translateY(-100%)}
+#boot::before{content:"";position:absolute;inset:0;background:radial-gradient(40% 40% at 50% 55%,rgba(200,255,46,.10),transparent 70%);pointer-events:none}
+#boot .bi{position:relative;display:grid;justify-items:center;gap:22px;text-align:center;padding:0 16px}
+#boot .bm{width:84px;height:84px;border-radius:24px;background:#c8ff2e;display:grid;place-items:center;transform:scale(.6);opacity:0;animation:bootPop .5s cubic-bezier(.2,.8,.2,1.2) .05s forwards}
+#boot .bm svg{width:48px;height:48px;fill:none;stroke:#0b0f00;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+#boot .bm path{stroke-dasharray:40;stroke-dashoffset:40;animation:bootDraw .7s ease-out .35s forwards}
+#boot .bm path+path{animation-delay:.85s}
+#boot .bw{font-weight:800;font-size:clamp(28px,7vw,52px);letter-spacing:-.02em;line-height:1;overflow:hidden}
+#boot .bw b{display:inline-block;transform:translateY(105%);animation:bootUp .6s cubic-bezier(.2,.8,.2,1) forwards;font-weight:800}
+#boot .bw small{display:block;font-size:.26em;letter-spacing:.5em;color:#a3a3ad;margin-top:10px;font-weight:600;opacity:0;animation:bootFade .5s ease .9s forwards}
+#boot .bg{font-family:Manrope,system-ui,sans-serif;font-weight:700;font-size:15px;color:#a3a3ad;opacity:0;animation:bootFade .4s ease .7s forwards}
+#boot .bg b{font-family:Unbounded,Manrope,sans-serif;color:#c8ff2e;font-size:30px;font-variant-numeric:tabular-nums;display:inline-block;min-width:3.2ch;text-align:right}
+#boot .bb{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.06)}
+#boot .bb i{display:block;height:100%;background:#c8ff2e;transform:scaleX(0);transform-origin:left;transition:transform .35s ease}
+#boot .bs{position:absolute;bottom:28px;left:0;right:0;text-align:center;font:600 12px Manrope,system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#6e6e78;opacity:0;animation:bootFade .4s ease 1s forwards}
+@keyframes bootPop{to{transform:none;opacity:1}}
+@keyframes bootDraw{to{stroke-dashoffset:0}}
+@keyframes bootUp{to{transform:none}}
+@keyframes bootFade{to{opacity:1}}
+@keyframes bootKill{to{visibility:hidden}}
+#boot{animation:bootKill 0s linear 7s forwards}
+@media (prefers-reduced-motion:reduce){#boot *{animation-duration:.01ms!important;animation-delay:0s!important}#boot{transition:opacity .2s}#boot.out{transform:none;opacity:0}}
+</style>
+<link rel="stylesheet" href="assets/css/style.css?v=8">
 </head>
 <body data-page="car">
+<div id="boot" aria-hidden="true">
+  <div class="bi">
+    <div class="bm"><svg viewBox="0 0 24 24"><path d="m3 7 6.5 6.5 4-4L21 17"/><path d="M15 17h6v-6"/></svg></div>
+    <div class="bw"><b style="animation-delay:0.450s">C</b><b style="animation-delay:0.485s">A</b><b style="animation-delay:0.520s">R</b><b style="animation-delay:0.555s">M</b><b style="animation-delay:0.590s">A</b><b style="animation-delay:0.625s">R</b><b style="animation-delay:0.660s">K</b><b style="animation-delay:0.695s">E</b><b style="animation-delay:0.730s">T</b><small>SAINT-P</small></div>
+    <div class="bg">ищем зазоры до рынка <b>-<span id="bootN">0</span>к</b></div>
+  </div>
+  <div class="bs">Тачки медийных перекупов Питера</div>
+  <div class="bb"><i id="bootBar"></i></div>
+</div>
+<script>
+(function () {
+  var b = document.getElementById('boot'), d = document.documentElement;
+  try { if (sessionStorage.getItem('cm_boot')) { b.parentNode.removeChild(b); return; } sessionStorage.setItem('cm_boot', '1'); } catch (e) {}
+  d.classList.add('booting');
+  var t0 = Date.now(), n = document.getElementById('bootN'), bar = document.getElementById('bootBar'), p = 0, fin = false, target = 750;
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function prog(v) { p = Math.max(p, v); bar.style.transform = 'scaleX(' + p + ')'; }
+  function tick() {
+    var k = Math.min(1, (Date.now() - t0 - 700) / 1100); if (k < 0) k = 0;
+    n.textContent = Math.round(target * (1 - Math.pow(1 - k, 3)));
+    if (k < 1 && !fin) requestAnimationFrame(tick);
+  }
+  reduce ? (n.textContent = target) : requestAnimationFrame(tick);
+  prog(.12);
+  document.addEventListener('DOMContentLoaded', function () {
+    try { target = Math.round(Math.max.apply(null, (window.CARS || []).map(function (c) { return c.gap || 0; })) / 1000) || 750; } catch (e) {}
+    prog(.45);
+    var imgs = [].slice.call(document.images, 0, 14), left = imgs.length;
+    imgs.forEach(function (im) {
+      var one = function () { left--; prog(.45 + .5 * (1 - left / Math.max(1, imgs.length))); };
+      im.complete ? one() : (im.addEventListener('load', one), im.addEventListener('error', one));
+    });
+  });
+  function done() {
+    if (fin) return; fin = true;
+    setTimeout(function () {
+      prog(1); n.textContent = target;
+      setTimeout(function () { b.classList.add('out'); d.classList.remove('booting'); setTimeout(function () { b.parentNode && b.parentNode.removeChild(b); }, 800); }, 220);
+    }, reduce ? 0 : Math.max(0, 1900 - (Date.now() - t0)));
+  }
+  window.addEventListener('load', done);
+  setTimeout(done, 4500);
+})();
+</script>
 <main id="car"></main>
-<script src="assets/js/cars.js?v=4"></script>
-<script src="assets/js/sellers.js?v=4"></script>
-<script src="assets/js/app.js?v=4"></script>
+<script src="assets/js/cars.js?v=8"></script>
+<script src="assets/js/cars-perekupchino.js?v=8"></script>
+<script src="assets/js/sellers.js?v=8"></script>
+<script src="assets/js/app.js?v=8"></script>
 </body>
 </html>
