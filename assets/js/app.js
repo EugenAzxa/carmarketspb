@@ -3,6 +3,35 @@
   'use strict';
 
   const CARS = window.CARS || [];
+
+  /* ---------------- derived specs: body, drive, steering, color ----------------
+     body/drive come from the model when the post doesn't say it; color only when the seller wrote it */
+  const BODY_BY_MODEL = [
+    [/универсал|largus|octavia 2014|e90 универсал/i, 'Универсал'],
+    [/sprinter/i, 'Фургон'],
+    [/x5|gx|rav4|cx-5|grand vitara|f7|tiggo|qashqai|hover|yeti|patriot|range rover|discovery|land cruiser|l200/i, 'Внедорожник'],
+    [/ceed|corsa|rio x-line|golf|focus 3/i, 'Хэтчбек'],
+    [/octavia/i, 'Лифтбек'],
+    [/camry|5-series|mazda 6|elantra|cruze|polo|corolla|lancer|k5|300c|e-class|lacetti|rio|solaris|optima|civic|a6/i, 'Седан']
+  ];
+  const REAR = /bmw (?!x)|cls|e-class|sprinter|300c/i, FRONT = /polo|rio|elantra|cruze|camry|corolla|lancer|ceed|corsa|largus|lacetti|k5|tiggo|octavia|mazda 6|solaris|optima|civic|focus/i;
+  const COLORS = [['Чёрный', /черн/, '#111'], ['Белый', /бел|молочн/, '#f2f2f2'], ['Серый', /сер(?!еб)|мокрый асфальт|графит/, '#7b7f86'],
+    ['Серебристый', /серебр/, '#c4c8cc'], ['Синий', /синем|синий|синего/, '#1f4fbf'], ['Голубой', /голуб/, '#6db7e8'],
+    ['Красный', /красн/, '#c6262e'], ['Коричневый', /коричн/, '#6b4428'], ['Зелёный', /зел[её]н(?!ь)(?![^\s]*\s+автотек)/, '#2f7d4a']];
+  function enrich(c) {
+    const name = `${c.make} ${c.model} ${c.year || ''}`;
+    const text = [...Object.values(c.groups || {}).flat(), ...(c.notes || [])].join(' \n ').toLowerCase().replace(/ё/g, 'е');
+    c.body = c.body || (BODY_BY_MODEL.find(([re]) => re.test(name)) || [])[1] || null;
+    c.drive = c.awd ? 'Полный' : REAR.test(name) ? 'Задний' : FRONT.test(name) ? 'Передний' : null;
+    c.wheel = /правый руль|правор/.test(text) ? 'Правый' : 'Левый';
+    const lines = text.split('\n').filter(l => !/автотек/.test(l));
+    const col = COLORS.find(([, re]) => lines.some(l => re.test(l) && /цвет/.test(l)));
+    c.color = col ? col[0] : null; c.colorHex = col ? col[2] : null;
+    // sellers always call out diesel; a listed engine volume without it is petrol
+    c.fuel = c.fuel || (/дизел/.test(text) ? 'Дизель' : /гибрид/.test(text) ? 'Гибрид' : /электро(мобил|кар)/.test(text) ? 'Электро' : c.volume ? 'Бензин' : null);
+    return c;
+  }
+  CARS.forEach(enrich);
   const SELLERS = window.SELLERS || {};
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -453,10 +482,10 @@
   }
 
   const QUICK = {
-    gap300: { gapMin: 300000 }, cheap: { priceMax: 700000 }, awd: { awd: true },
+    gap300: { gapMin: 300000 }, cheap: { priceMax: 700000 }, awd: { drive: 'Полный' },
     owner: { owners12: true }, avito: { notAvito: true }, native: { native: true }
   };
-  const DEF = { q: '', seller: '', make: '', priceMin: '', priceMax: '', yearMin: '', gear: '', awd: false, owners12: false, notAvito: false, native: false, noAcc: false, gapMin: 0, sold: false, fav: false, sort: 'gap' };
+  const DEF = { q: '', seller: '', body: '', fuel: '', drive: '', wheel: '', color: '', make: '', priceMin: '', priceMax: '', yearMin: '', gear: '', owners12: false, notAvito: false, native: false, noAcc: false, gapMin: 0, sold: false, fav: false, sort: 'gap' };
   let state = { ...DEF };
 
   function catalog() {
@@ -492,13 +521,20 @@
         <h3>Коробка</h3>
         <div class="seg" id="fgear">${[['', 'Любая'], ['Автомат', 'Автомат'], ['Механика', 'Механика'], ['Робот', 'Робот'], ['Вариатор', 'Вариатор']].map(([v, l]) => `<button type="button" data-v="${v}">${l}</button>`).join('')}</div>
       </div>
+      ${segGroup('fbody', 'Кузов', 'body', ['Седан', 'Хэтчбек', 'Лифтбек', 'Универсал', 'Внедорожник', 'Фургон'], count)}
+      ${segGroup('ffuel', 'Двигатель', 'fuel', ['Бензин', 'Дизель', 'Гибрид', 'Электро'], count)}
+      ${segGroup('fdrive', 'Привод', 'drive', ['Передний', 'Задний', 'Полный'], count)}
+      ${segGroup('fwheel', 'Руль', 'wheel', ['Левый', 'Правый'], count)}
+      <div class="f-group">
+        <h3>Цвет</h3>
+        <div class="swatches" id="fcolor">${COLORS.map(([n, , hex]) => { const k = count(c => c.color === n); return `<button type="button" data-v="${n}" title="${n}" aria-label="${n}" style="--sw:${hex}" ${k ? '' : 'disabled'}><span></span></button>`; }).join('')}</div>
+      </div>
       <div class="f-group">
         <h3>Год от</h3>
         <select class="field" id="fyear"><option value="">Любой</option>${[2020, 2017, 2015, 2012, 2010, 2005].map(y => `<option value="${y}">${y}</option>`).join('')}</select>
       </div>
       <div class="f-group">
         <h3>Важно мне</h3>
-        <label class="check"><input type="checkbox" id="fawd">Полный привод<span class="n">${count(c => c.awd)}</span></label>
         <label class="check"><input type="checkbox" id="fown">1-2 владельца<span class="n">${count(c => c.owners && c.owners <= 2)}</span></label>
         <label class="check"><input type="checkbox" id="fnat">Вся в родной краске<span class="n">${count(allNative)}</span></label>
         <label class="check"><input type="checkbox" id="favito">Не было на Авито<span class="n">${count(c => c.not_on_avito)}</span></label>
@@ -519,9 +555,11 @@
     on('#fpmin', 'input', () => state.priceMin = num($('#fpmin').value));
     on('#fpmax', 'input', () => state.priceMax = num($('#fpmax').value));
     on('#fyear', 'change', () => state.yearMin = +$('#fyear').value || '');
-    [['#fawd', 'awd'], ['#fown', 'owners12'], ['#fnat', 'native'], ['#favito', 'notAvito'], ['#facc', 'noAcc'], ['#ffav', 'fav'], ['#fsold', 'sold']]
+    [['#fown', 'owners12'], ['#fnat', 'native'], ['#favito', 'notAvito'], ['#facc', 'noAcc'], ['#ffav', 'fav'], ['#fsold', 'sold']]
       .forEach(([id, k]) => on(id, 'change', () => state[k] = $(id).checked));
     $('#fgap').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; state.gapMin = +b.dataset.v; syncFilters(); render(); });
+    [['#fbody', 'body'], ['#ffuel', 'fuel'], ['#fdrive', 'drive'], ['#fwheel', 'wheel'], ['#fcolor', 'color']].forEach(([id, k]) =>
+      $(id).addEventListener('click', e => { const b = e.target.closest('button'); if (!b || b.disabled) return; state[k] = state[k] === b.dataset.v ? '' : b.dataset.v; syncFilters(); render(); }));
     $('#fseller').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; state.seller = b.dataset.v; syncFilters(); render(); });
     $('#fgear').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; state.gear = b.dataset.v; syncFilters(); render(); });
     $('#freset').addEventListener('click', () => { state = { ...DEF, sort: state.sort }; syncFilters(); render(); });
@@ -541,13 +579,19 @@
     syncFilters(); render();
   }
 
+  function segGroup(id, title, key, values, count) {
+    return `<div class="f-group"><h3>${title}</h3><div class="seg" id="${id}">${values.map(v => { const n = count(c => c[key] === v); return `<button type="button" data-v="${v}" ${n ? '' : 'disabled'}>${v}${n ? ` <small>${n}</small>` : ''}</button>`; }).join('')}</div></div>`;
+  }
+
   function syncFilters() {
     if (!$('#filters')) return;
     $('#fq').value = state.q; $('#fmake').value = state.make;
     $('#fpmin').value = state.priceMin ? state.priceMin.toLocaleString('ru-RU') : '';
     $('#fpmax').value = state.priceMax ? state.priceMax.toLocaleString('ru-RU') : '';
     $('#fyear').value = state.yearMin || '';
-    $('#fawd').checked = state.awd; $('#fown').checked = state.owners12; $('#fnat').checked = state.native;
+    [['#fbody', 'body'], ['#ffuel', 'fuel'], ['#fdrive', 'drive'], ['#fwheel', 'wheel'], ['#fcolor', 'color']].forEach(([id, k]) =>
+      $$(id + ' button').forEach(b => b.classList.toggle('on', b.dataset.v === state[k])));
+    $('#fown').checked = state.owners12; $('#fnat').checked = state.native;
     $('#favito').checked = state.notAvito; $('#facc').checked = state.noAcc; $('#ffav').checked = state.fav; $('#fsold').checked = state.sold;
     $$('#fgap button').forEach(b => b.classList.toggle('on', +b.dataset.v === state.gapMin));
     $$('#fgear button').forEach(b => b.classList.toggle('on', b.dataset.v === state.gear));
@@ -560,7 +604,7 @@
     let list = CARS.filter(c => {
       if (!state.sold && gone(c)) return false;
       if (q) {
-        const hay = `${c.make} ${c.model} ${c.year} ${c.gearbox} ${c.fuel} ${c.engine_line} ${seller(c).name}`.toLowerCase();
+        const hay = `${c.make} ${c.model} ${c.year} ${c.gearbox} ${c.fuel} ${c.body} ${c.drive} ${c.color} ${c.engine_line} ${seller(c).name}`.toLowerCase();
         if (!q.split(/\s+/).every(w => hay.includes(w))) return false;
       }
       if (state.seller && c.seller !== state.seller) return false;
@@ -570,7 +614,11 @@
       if (state.yearMin && c.year < state.yearMin) return false;
       if (state.gear && !(state.gear === 'Робот' ? ['Робот', 'DSG'].includes(c.gearbox) : c.gearbox === state.gear)) return false;
       if (state.gapMin && (c.gap || 0) < state.gapMin) return false;
-      if (state.awd && !c.awd) return false;
+      if (state.body && c.body !== state.body) return false;
+      if (state.fuel && c.fuel !== state.fuel) return false;
+      if (state.drive && c.drive !== state.drive) return false;
+      if (state.wheel && c.wheel !== state.wheel) return false;
+      if (state.color && c.color !== state.color) return false;
       if (state.owners12 && !(c.owners && c.owners <= 2)) return false;
       if (state.native && !allNative(c)) return false;
       if (state.notAvito && !c.not_on_avito) return false;
@@ -660,7 +708,8 @@
     const specs = [
       ['Год', c.year || 'Уточняйте'], ['Пробег', kmF(c.mileage) || (c.mileage_base ? kmF(c.mileage_base) + ' (база)' : 'Уточняйте')],
       ['Двигатель', [c.volume && c.volume + ' л', c.hp && c.hp + ' л.с.', c.fuel && c.fuel.toLowerCase()].filter(Boolean).join(', ') || 'Уточняйте'],
-      ['Коробка', gb(c) || 'Уточняйте'], ['Привод', c.awd ? 'Полный' : c.gearbox ? 'Монопривод' : 'Уточняйте'], ['Владельцы', c.owners || 'Уточняйте'],
+      ['Кузов', c.body || 'Уточняйте'], ['Коробка', gb(c) || 'Уточняйте'], ['Привод', c.drive || 'Уточняйте'], ['Руль', c.wheel],
+      ['Цвет', c.color || 'Уточняйте'], ['Владельцы', c.owners || 'Уточняйте'],
       ['ПТС', c.pts ? 'Оригинал' : 'Уточняйте'], ['Ключи', c.keys2 ? '2 ключа' : 'Уточняйте'], ['Город', s.city]
     ];
     const painted = c.paint ? Object.values(c.paint).filter(v => v === 'p').length : 0;
@@ -709,7 +758,7 @@
             </section>` : ''}
 
             ${(Object.keys(c.paint || {}).length || c.groups.body.length) ? `<section class="block"><h2>${ic('paint', 'lg')}Кузов и окрасы</h2>
-              <div class="body-wrap">
+              <div class="body-wrap ${Object.keys(c.paint || {}).length ? '' : 'no-svg'}">
                 <div class="body-svg">
                   ${bodySvg(c.paint || {})}
                   <div class="legend"><span><i style="background:#2f6b45"></i>Родная ${native}</span><span><i style="background:var(--warn)"></i>Окрас ${painted}</span><span><i style="background:var(--surface-3)"></i>Не указано</span></div>
@@ -729,6 +778,7 @@
             </section>` : ''}
 
             <section class="block"><h2>${ic('history', 'lg')}История и проверки</h2>
+              ${c.autoteka_url ? `<a class="btn btn-ghost" style="margin-bottom:14px" href="${c.autoteka_url}" target="_blank" rel="noopener">${ic('report', 'sm')}Открыть отчёт Автотеки</a>` : ''}
               <ul class="checks">${historyChecks(c).map(([k, t, sub]) => `<li class="${k}"><span class="lamp">${ic(k === 'ok' ? 'check' : k === 'warn' ? 'alert' : 'info', 'sm')}</span><div><b>${esc(t)}</b><small>${esc(sub)}</small></div></li>`).join('')}</ul>
             </section>
 
@@ -764,7 +814,7 @@
                   ${c.avito ? `<div><i style="background:#ffe14d"></i>Авито оценка<b>${kRub(c.avito)}</b></div>` : '<div></div>'}
                   ${c.market ? `<div><i style="background:var(--hot)"></i>Старт рынка<b>${kRub(c.market)}+</b></div>` : '<div></div>'}
                 </div>
-              </div>` : `<p style="margin:14px 0 0;color:var(--muted);font-size:14px">${c.invite ? 'Цена из анонса в канале продавца.' : 'Цена из поста продавца.'}</p>`}
+              </div>` : `<p style="margin:14px 0 0;color:var(--muted);font-size:14px">Цена из объявления в канале продавца.</p>`}
             </div>
 
             ${sold ? '' : '<div class="demand" id="demand"></div>'}
@@ -774,10 +824,10 @@
                 <a class="btn btn-ghost btn-block" href="seller.html?id=${s.id}">Другие машины ${esc(s.name)}</a>` : `
               ${c.invite ? `<a class="btn btn-gold-s btn-block" href="${c.invite}" target="_blank" rel="noopener">${ic('send', 'sm')}Смотреть в канале ${esc(s.name)}</a>` : ''}
               <button class="btn btn-accent btn-block" id="depBtn">${ic('lock', 'sm')}${reserved ? 'Встать в очередь на бронь' : 'Забронировать задатком'}</button>
-              <p class="deposit-note">от 5 000 ₽, бронь до 72 часов, возврат если не совпало с описанием</p>
+              <p class="deposit-note">${c.manager ? `Менеджер ${esc(c.manager)}, ${esc(c.phoneLabel)}. ` : ''}от 5 000 ₽, бронь до 72 часов, возврат если не совпало с описанием</p>
               <div class="row">
                 <button class="btn btn-ghost" id="offBtn">${ic('hand', 'sm')}Торг</button>
-                <a class="btn btn-ghost" href="tel:${s.phone}">${ic('phone', 'sm')}Звонок</a>
+                <a class="btn btn-ghost" href="tel:${c.phone || s.phone}">${ic('phone', 'sm')}Звонок</a>
               </div>
               <a class="btn btn-dark btn-block" href="${tgLink(s, `Здравствуйте! Интересует ${title(c)} за ${rub(c.price)}. ${location.href}`)}" target="_blank" rel="noopener">${ic('send', 'sm')}Написать в Telegram</a>`}
             </div>
