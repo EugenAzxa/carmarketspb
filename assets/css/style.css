@@ -636,7 +636,7 @@ textarea.field { height: 110px; padding: 12px 14px; resize: vertical; }
 
 /* ---------- seller themes ----------
    neon   - Lex Auto: magenta/purple glow, gold, rounded (default styles above)
-   grunge - Перекупчино: ink and paper, zero radius, stencil type, one red stamp accent */
+   grunge - ink and paper, zero radius, stencil type, one red stamp accent */
 .seller-tile .tile-logo { height: 88px; width: auto; align-self: flex-start; }
 .t-grunge.brand-card, .seller-tile.brand.t-grunge, .s-hero.t-grunge, .seller-mini.t-grunge, .onboard.t-grunge {
   background:

@@ -2,7 +2,9 @@
 (function () {
   'use strict';
 
-  const CARS = window.CARS || [];
+  const SELLERS = window.SELLERS || {};
+  // only cars of sellers that are switched on (a seller file not included = seller hidden)
+  const CARS = (window.CARS || []).filter(c => SELLERS[c.seller]);
 
   /* ---------------- derived specs: body, drive, steering, color ----------------
      body/drive come from the model when the post doesn't say it; color only when the seller wrote it */
@@ -32,7 +34,6 @@
     return c;
   }
   CARS.forEach(enrich);
-  const SELLERS = window.SELLERS || {};
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -182,7 +183,7 @@
           <li><a href="bloggers.html#join">Подключить канал</a></li>
         </ul></div>
       </div>
-      <p class="note">Демо-версия. Машины, фото и цены взяты из открытых Telegram-каналов Lex Auto и Перекупчино (октябрь 2026). Счётчики спроса, статусы брони и схема окрасов показаны для примера, актуальное состояние уточняйте у продавца. Задаток в демо не списывается.</p>
+      <p class="note">Демо-версия. Машины, фото и цены взяты из Telegram-каналов ${Object.values(SELLERS).map(x => esc(x.name)).join(' и ')} (октябрь 2026). Счётчики спроса, статусы брони и схема окрасов показаны для примера, актуальное состояние уточняйте у продавца. Задаток в демо не списывается.</p>
     </div></footer>`;
   }
   function mountChrome(active) {
@@ -501,7 +502,7 @@
         <h3>Поиск</h3>
         <input class="field" id="fq" placeholder="Марка, модель, год" value="${esc(state.q)}">
       </div>
-      <div class="f-group">
+      <div class="f-group" ${Object.keys(SELLERS).length > 1 ? '' : 'hidden'}>
         <h3>Продавец</h3>
         <div class="seg" id="fseller"><button type="button" data-v="">Все</button>${Object.values(SELLERS).map(x => `<button type="button" data-v="${x.id}">${esc(x.name)}${count(c => c.seller === x.id) ? '' : ' · скоро'}</button>`).join('')}</div>
       </div>

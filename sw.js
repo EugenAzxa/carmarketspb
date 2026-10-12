@@ -1,7 +1,7 @@
 // CarMarket SPB service worker: pages network-first (fresh prices), assets cache-first (photos don't change)
-const V = 'cm-v1';
+const V = 'cm-v2';
 const CORE = ['index.html', 'car.html', 'seller.html', 'bloggers.html', 'assets/css/style.css', 'assets/js/app.js',
-  'assets/js/cars.js', 'assets/js/cars-perekupchino.js', 'assets/js/sellers.js', 'assets/img/favicon.svg'];
+  'assets/js/cars.js', 'assets/js/sellers.js', 'assets/img/favicon.svg'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(V).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
