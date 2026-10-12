@@ -62,6 +62,12 @@ python3 tools/build_data.py tools/posts.json <photos>
 
 Инлайн в `<head>`/`<body>` каждой страницы (`#boot`), чтобы появлялся до загрузки CSS. Показывается один раз за сессию (`sessionStorage cm_boot`), минимум 1.9 с, максимум 4.5 с, CSS-предохранитель прячет его через 7 с даже без JS. Счётчик докручивается до максимального зазора в каталоге.
 
+## Деплой
+
+Vercel, проект `eugenazxas-projects/carmarketspb`, временный домен **https://carmarketspb.vercel.app**. Деплой из папки: `vercel deploy --prod` (CLI в `~/.local/node/bin`, вход eugenazxa). Git-интеграция не подключена, пуш в GitHub сам не выкатывает.
+
+Пока домен временный, сайт закрыт от индексации: `X-Robots-Tag: noindex` в `vercel.json`, `robots.txt`, `<meta name="robots">`. Перед запуском на боевом домене убрать все три. `tools/` и README на сервер не уходят (`.vercelignore`).
+
 ## Локально
 
 ```sh
