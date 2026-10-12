@@ -162,7 +162,45 @@
     const burger = $('.burger'), nav = $('#nav');
     burger && burger.addEventListener('click', () => { const o = nav.classList.toggle('open'); burger.setAttribute('aria-expanded', o); });
     $$('#nav a').forEach(a => a.addEventListener('click', () => nav.classList.remove('open')));
+    if (active !== 'car') document.body.insertAdjacentHTML('beforeend', tabbar(active));
+    else document.body.classList.add('no-tabbar');
     updateFavCount();
+    pwa();
+  }
+
+  /* ---------------- mobile: bottom tab bar (5 top-level screens, MD bottom-nav-limit) ---------------- */
+  function tabbar(active) {
+    const fav = new URLSearchParams(location.search).get('fav');
+    const t = (href, icon, label, on) => `<a href="${href}" class="${on ? 'on' : ''}" ${on ? 'aria-current="page"' : ''}>${ic(icon)}<span>${label}</span></a>`;
+    return `<nav class="tabbar" aria-label="Разделы">
+      ${t('index.html', 'car', 'Главная', active === 'catalog' && !fav)}
+      ${t('index.html?focus=search#catalog', 'search', 'Поиск', false)}
+      <a href="bloggers.html#join" class="tab-add" aria-label="Разместить авто"><span class="plus">${ic('plus')}</span><span>Продать</span></a>
+      <a href="index.html?fav=1#catalog" class="${fav ? 'on' : ''}">${ic('heart')}<span>Избранное</span><i class="count fav-count"></i></a>
+      ${t('index.html#sellers', 'users', 'Продавцы', active === 'seller')}
+    </nav>`;
+  }
+
+  /* ---------------- PWA: install to home screen + offline cache ---------------- */
+  let deferredInstall = null;
+  function pwa() {
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
+    const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+    if (standalone || store.get('installHidden', false) || innerWidth > 760) return;
+    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const show = () => {
+      if ($('#install')) return;
+      document.body.insertAdjacentHTML('beforeend', `<div class="install" id="install" role="dialog" aria-label="Установить приложение">
+        <span class="logo-mark">${LOGO_MARK}</span>
+        <div><b>CarMarket на экран телефона</b><small>${ios ? 'Нажмите «Поделиться», затем «На экран Домой»' : 'Открывается как приложение, без браузера'}</small></div>
+        ${ios ? '' : '<button class="btn btn-accent btn-sm" id="installGo">Установить</button>'}
+        <button class="icon-btn" id="installX" aria-label="Не сейчас">${ic('x', 'sm')}</button>
+      </div>`);
+      $('#installX').onclick = () => { store.set('installHidden', true); $('#install').remove(); };
+      $('#installGo') && ($('#installGo').onclick = async () => { if (!deferredInstall) return; deferredInstall.prompt(); await deferredInstall.userChoice; deferredInstall = null; $('#install')?.remove(); });
+    };
+    addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredInstall = e; setTimeout(show, 6000); });
+    if (ios) setTimeout(show, 8000);
   }
 
   /* ---------------- car card ---------------- */
@@ -494,6 +532,12 @@
     $('#fclose').addEventListener('click', closeF);
     $('#fshow').addEventListener('click', () => { closeF(); document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' }); });
     bindFavs($('#grid'));
+    // mobile: two-column compact tiles, like marketplace apps; remembered per visitor
+    const vb = $('#viewBtn'), grid = $('#grid');
+    const setView = v => { grid.classList.toggle('compact', v === 'compact'); vb.innerHTML = ic(v === 'compact' ? 'menu' : 'sliders'); vb.setAttribute('aria-label', v === 'compact' ? 'Крупные карточки' : 'Плитка в два ряда'); store.set('view', v); };
+    setView(store.get('view', 'compact'));
+    vb.addEventListener('click', () => setView(grid.classList.contains('compact') ? 'big' : 'compact'));
+    if (params.get('focus') === 'search') setTimeout(() => { document.getElementById('catalog').scrollIntoView(); openF(); $('#fq').focus(); }, 300);
     syncFilters(); render();
   }
 
@@ -600,7 +644,7 @@
   }
 
   function pageCar() {
-    mountChrome('catalog');
+    mountChrome('car');
     const id = new URLSearchParams(location.search).get('id');
     const c = CARS.find(x => x.slug === id) || CARS[0];
     const s = seller(c);
