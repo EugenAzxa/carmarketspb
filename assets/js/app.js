@@ -125,7 +125,7 @@
   /* ---------------- derived car facts ---------------- */
   const gb = c => c.gearbox === 'DSG' ? 'Робот DSG' : c.gearbox;
   function specLine(c) {
-    const out = [c.year, kmF(c.mileage || c.mileage_base), c.volume ? `${c.volume} л${c.hp ? ' / ' + c.hp + ' л.с.' : ''}` : null, gb(c), c.awd ? '4WD' : null, c.fuel === 'Дизель' ? 'дизель' : null];
+    const out = [c.year, kmF(c.mileage || c.mileage_base) || 'пробег по запросу', c.volume ? `${c.volume} л${c.hp ? ' / ' + c.hp + ' л.с.' : ''}` : null, gb(c), c.awd ? '4WD' : null, c.fuel === 'Дизель' ? 'дизель' : null];
     return out.filter(Boolean);
   }
   function quickTags(c, max = 3) {
@@ -707,7 +707,9 @@
     const pos = v => Math.max(3, Math.min(97, (v - lo) / (hi - lo) * 100));
     const sold = gone(c), reserved = c.status === 'reserved';
     const specs = [
-      ['Год', c.year || 'Уточняйте'], ['Пробег', kmF(c.mileage) || (c.mileage_base ? kmF(c.mileage_base) + ' (база)' : 'Уточняйте')],
+      ['Год', c.year || 'Уточняйте'], ['Пробег', kmF(c.mileage) || (c.mileage_base ? kmF(c.mileage_base) + ' (база)' : {
+        html: `<a class="ask" href="${tgLink(s, `Здравствуйте! Подскажите пробег ${title(c)} за ${rub(c.price)}: по приборке и по базе. ${location.href}`)}" target="_blank" rel="noopener">${ic('send', 'sm')}Запросить пробег</a>`
+      })],
       ['Двигатель', [c.volume && c.volume + ' л', c.hp && c.hp + ' л.с.', c.fuel && c.fuel.toLowerCase()].filter(Boolean).join(', ') || 'Уточняйте'],
       ['Кузов', c.body || 'Уточняйте'], ['Коробка', gb(c) || 'Уточняйте'], ['Привод', c.drive || 'Уточняйте'], ['Руль', c.wheel],
       ['Цвет', c.color || 'Уточняйте'], ['Владельцы', c.owners || 'Уточняйте'],
@@ -749,7 +751,7 @@
             </div>
 
             <section class="block"><h2>Характеристики</h2>
-              <dl class="specs">${specs.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>
+              <dl class="specs">${specs.map(([k, v]) => `<div><dt>${k}</dt><dd>${v && v.html ? v.html : esc(v)}</dd></div>`).join('')}</dl>
             </section>
 
             ${c.tg_posts && c.tg_posts.length ? `

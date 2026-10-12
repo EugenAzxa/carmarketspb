@@ -773,3 +773,6 @@ textarea.field { height: 110px; padding: 12px 14px; resize: vertical; }
 @media (max-width: 760px) { .swatches button { width: 44px; height: 44px; } .swatches button span { width: 30px; height: 30px; } }
 .body-wrap.no-svg { grid-template-columns: 1fr; }
 .body-wrap.no-svg .body-svg { display: none; }
+
+.specs .ask { display: inline-flex; align-items: center; gap: 6px; color: var(--accent); font-weight: 700; border-bottom: 1px dashed currentColor; padding-bottom: 1px; }
+.specs .ask:hover { color: #d8ff66; }
